@@ -38,7 +38,7 @@ export default function App() {
   }
 
   return (
-      <div className="app">
+      <div className={`app ${selected ? "has-selected" : ""}`}>
         <aside className="sidebar">
           <button onClick={addNote}>+ New note</button>
           <ul>
@@ -57,6 +57,9 @@ export default function App() {
         <main className="editor">
           {selected ? (
               <>
+                <button className="back" onClick={() => setSelectedId(null)}>
+                  ← Back
+                </button>
                 <input
                     value={selected.title}
                     placeholder="Title"
