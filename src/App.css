@@ -1,0 +1,11 @@
+body { margin: 0; font-family: system-ui, sans-serif; }
+.app { display: flex; height: 100vh; }
+.sidebar { width: 260px; border-right: 1px solid #ddd; padding: 12px; overflow-y: auto; }
+.sidebar ul { list-style: none; padding: 0; margin: 12px 0 0; }
+.sidebar li { padding: 8px; cursor: pointer; border-radius: 6px; }
+.sidebar li.active, .sidebar li:hover { background: #eee; }
+.editor { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+.editor input { font-size: 1.4rem; padding: 8px; }
+.editor textarea { flex: 1; padding: 8px; font-size: 1rem; resize: none; }
+.empty { color: #888; }
+.danger { align-self: flex-start; color: #b00020; }
