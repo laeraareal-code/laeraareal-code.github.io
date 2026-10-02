@@ -1,17 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-type Note = {
-  id: string;
-  title: string;
-  body: string;
-  updatedAt: number;
-  x: number;
-  y: number;
-};
+type Note = { id: string; text: string; x: number; y: number };
+type Raw = Partial<Note> & { title?: string; body?: string };
 
 const KEY = "notes";
-const SIZE = 100; // circle diameter in px
+const SIZE = 110; // circle diameter in px
+const MAX = 60; // max symbols per note
 
 function defaultPos(i: number) {
   return { x: 20 + (i % 3) * (SIZE + 20), y: 20 + Math.floor(i / 3) * (SIZE + 20) };
@@ -19,10 +14,14 @@ function defaultPos(i: number) {
 
 function loadNotes(): Note[] {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? "[]");
-    // old notes saved before dragging existed get a starting position
-    return raw.map((n: Note, i: number) => ({
-      ...n,
+    const raw: Raw[] = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    return raw.map((n, i) => ({
+      id: n.id ?? crypto.randomUUID(),
+      // migrate old notes that had a title and a body
+      text: (typeof n.text === "string"
+              ? n.text
+              : [n.title, n.body].filter(Boolean).join(" ")
+      ).slice(0, MAX),
       x: typeof n.x === "number" ? n.x : defaultPos(i).x,
       y: typeof n.y === "number" ? n.y : defaultPos(i).y,
     }));
@@ -33,7 +32,8 @@ function loadNotes(): Note[] {
 
 export default function App() {
   const [notes, setNotes] = useState<Note[]>(loadNotes);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // editing: null = closed, id = null means a brand new note
+  const [editing, setEditing] = useState<{ id: string | null; text: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     id: string;
@@ -48,29 +48,21 @@ export default function App() {
     localStorage.setItem(KEY, JSON.stringify(notes));
   }, [notes]);
 
-  const selected = notes.find((n) => n.id === selectedId);
-
-  function addNote() {
-    const { x, y } = defaultPos(notes.length);
-    const note: Note = {
-      id: crypto.randomUUID(),
-      title: "",
-      body: "",
-      updatedAt: Date.now(),
-      x,
-      y,
-    };
-    setNotes([...notes, note]);
-    setSelectedId(note.id);
+  function save() {
+    if (!editing || !editing.text.trim()) return;
+    const text = editing.text.trim().slice(0, MAX);
+    if (editing.id === null) {
+      const { x, y } = defaultPos(notes.length);
+      setNotes([...notes, { id: crypto.randomUUID(), text, x, y }]);
+    } else {
+      setNotes(notes.map((n) => (n.id === editing.id ? { ...n, text } : n)));
+    }
+    setEditing(null);
   }
 
-  function updateNote(id: string, changes: Partial<Pick<Note, "title" | "body">>) {
-    setNotes(notes.map((n) => (n.id === id ? { ...n, ...changes, updatedAt: Date.now() } : n)));
-  }
-
-  function deleteNote(id: string) {
-    setNotes(notes.filter((n) => n.id !== id));
-    setSelectedId(null);
+  function remove() {
+    if (editing?.id) setNotes(notes.filter((n) => n.id !== editing.id));
+    setEditing(null);
   }
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>, note: Note) {
@@ -102,39 +94,13 @@ export default function App() {
   function onPointerUp() {
     const d = drag.current;
     drag.current = null;
-    if (d && !d.moved) setSelectedId(d.id); // it was a click, open the note
-  }
-
-  if (selected) {
-    return (
-        <div className="app">
-          <div className="editor">
-            <button className="back" onClick={() => setSelectedId(null)}>
-              ← Back
-            </button>
-            <input
-                value={selected.title}
-                placeholder="Title"
-                onChange={(e) => updateNote(selected.id, { title: e.target.value })}
-            />
-            <textarea
-                value={selected.body}
-                placeholder="Write something..."
-                onChange={(e) => updateNote(selected.id, { body: e.target.value })}
-            />
-            <button className="danger" onClick={() => deleteNote(selected.id)}>
-              Delete
-            </button>
-          </div>
-        </div>
-    );
+    if (!d || d.moved) return;
+    const note = notes.find((n) => n.id === d.id);
+    if (note) setEditing({ id: note.id, text: note.text }); // it was a click
   }
 
   return (
       <div className="app">
-        <div className="toolbar">
-          <button onClick={addNote}>+ New note</button>
-        </div>
         <div className="canvas" ref={canvasRef}>
           {notes.map((n) => (
               <div
@@ -146,10 +112,42 @@ export default function App() {
                   onPointerUp={onPointerUp}
                   onPointerCancel={onPointerUp}
               >
-                {n.title || "Untitled"}
+                {n.text}
               </div>
           ))}
         </div>
+
+        <button className="fab" onClick={() => setEditing({ id: null, text: "" })} aria-label="New note">
+          +
+        </button>
+
+        {editing && (
+            <div className="overlay">
+              <div className="panel">
+            <textarea
+                autoFocus
+                value={editing.text}
+                maxLength={MAX}
+                placeholder="Write something..."
+                onChange={(e) => setEditing({ ...editing, text: e.target.value })}
+            />
+                <div className="counter">
+                  {editing.text.length}/{MAX}
+                </div>
+                <div className="actions">
+                  <button className="primary" onClick={save} disabled={!editing.text.trim()}>
+                    Save
+                  </button>
+                  <button onClick={() => setEditing(null)}>Cancel</button>
+                  {editing.id && (
+                      <button className="danger" onClick={remove}>
+                        Delete
+                      </button>
+                  )}
+                </div>
+              </div>
+            </div>
+        )}
       </div>
   );
 }

@@ -1,45 +1,108 @@
-body { margin: 0; font-family: system-ui, sans-serif; }
+:root { color-scheme: dark; }
 
-.app { display: flex; flex-direction: column; height: 100dvh; }
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #121212;
+    color: #eaeaea;
+}
 
-.toolbar { padding: 12px; border-bottom: 1px solid #ddd; }
+button {
+    font: inherit;
+    color: inherit;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+button:hover:not(:disabled) { background: #343434; }
+button:disabled { opacity: 0.4; cursor: default; }
+
+.app { height: 100dvh; position: relative; }
 
 /* Board with draggable circles */
 .canvas {
-    flex: 1;
-    position: relative;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
-    background: #fafafa;
+    background: #121212;
 }
 .bubble {
     position: absolute;
     box-sizing: border-box;
     border-radius: 50%;
-    background: #cfd8ff;
+    background: #3b4a7a;
+    color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 12px;
+    padding: 14px;
     overflow: hidden;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    line-height: 1.25;
     word-break: break-word;
     cursor: grab;
     user-select: none;
     touch-action: none; /* lets you drag with a finger instead of scrolling */
 }
-.bubble:active { cursor: grabbing; background: #b8c5ff; }
+.bubble:active { cursor: grabbing; background: #4a5b92; }
 
-/* Open note */
-.editor {
-    flex: 1;
-    min-height: 0;
+/* New note button */
+.fab {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: #2e8b63;
+    color: #fff;
+    font-size: 2rem;
+    line-height: 1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.fab:hover:not(:disabled) { background: #38a574; }
+
+/* Editor on top of the board */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+.panel {
+    width: 100%;
+    max-width: 420px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 16px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px;
 }
-.editor input { font-size: 1.4rem; padding: 8px; }
-.editor textarea { flex: 1; padding: 8px; font-size: 1rem; resize: none; }
-.back, .danger { align-self: flex-start; }
-.danger { color: #b00020; }
+.panel textarea {
+    height: 140px;
+    padding: 10px;
+    font: inherit;
+    font-size: 1rem;
+    color: inherit;
+    background: #121212;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    resize: none;
+}
+.counter { align-self: flex-end; font-size: 0.8rem; color: #888; }
+.actions { display: flex; gap: 8px; }
+.primary { background: #2e8b63; border-color: #2e8b63; color: #fff; }
+.primary:hover:not(:disabled) { background: #38a574; }
+.danger { margin-left: auto; color: #ff6b6b; }
