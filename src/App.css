@@ -21,20 +21,21 @@ button:disabled { cursor: default; }
 
 .app { height: 100dvh; position: relative; overflow: hidden; }
 
-/* Board */
+/* Board (leaves room for the timeline) */
 .canvas {
     position: absolute;
-    inset: 0;
+    inset: 0 0 84px 0;
     overflow: hidden;
     background: #121212;
 }
 
-/* Note circles */
+/* Note circles: color comes from --h (hue), which changes with age */
 .bubble {
+    --h: 225; /* default hue, overridden inline from App.tsx */
     position: absolute;
     box-sizing: border-box;
     border-radius: 50%;
-    background: #3b4a7a;
+    background: hsl(var(--h) 35% 36%);
     color: #f0f0f0;
     display: flex;
     align-items: center;
@@ -42,25 +43,32 @@ button:disabled { cursor: default; }
     text-align: center;
     padding: 14px;
     overflow: hidden;
-    font-size: 0.75rem;
     line-height: 1.25;
     word-break: break-word;
     cursor: grab;
     user-select: none;
     touch-action: none;
-    transition: opacity 0.15s, background 0.15s, box-shadow 0.15s;
+    transition:
+            width 0.3s, height 0.3s, opacity 0.15s,
+            background 0.2s, box-shadow 0.15s, transform 0.15s;
 }
-.bubble:active { cursor: grabbing; }
+.bubble.dragging {
+    background: hsl(var(--h) 55% 58%);
+    transform: scale(1.06);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    cursor: grabbing;
+    z-index: 6;
+    transition: background 0.2s, box-shadow 0.15s, transform 0.15s; /* no size lag while dragging */
+}
 .bubble.active {
-    background: #5b73c9;
-    box-shadow: 0 0 0 3px #a9b8ff;
+    background: hsl(var(--h) 45% 52%);
+    box-shadow: 0 0 0 3px hsl(var(--h) 80% 82%);
     z-index: 5;
     cursor: default;
 }
-.bubble.draft { background: #5b73c9; }
 .bubble.dim { opacity: 0.3; pointer-events: none; }
 
-/* "+" circle (top-left, same size as notes) */
+/* "+" circle (top-left, same size as a new note) */
 .add {
     position: absolute;
     left: 20px;
@@ -70,18 +78,18 @@ button:disabled { cursor: default; }
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: #2e8b63;
+    background: #2f5446;
     z-index: 4;
     transition: opacity 0.15s, background 0.15s;
 }
-.add:hover:not(:disabled) { background: #38a574; }
+.add:hover:not(:disabled) { background: #3a6755; }
 .add::before,
 .add::after {
     content: "";
     position: absolute;
     left: 50%;
     top: 50%;
-    background: #fff;
+    background: #cfe0d8;
     border-radius: 2px;
     transform: translate(-50%, -50%);
 }
@@ -115,11 +123,39 @@ button:disabled { cursor: default; }
     border-radius: 8px;
     resize: none;
 }
-.panel textarea:focus { outline: none; border-color: #a9b8ff; }
+.panel textarea:focus { outline: none; border-color: #8a97d6; }
 .counter { align-self: flex-end; font-size: 0.75rem; color: #888; }
 .actions { display: flex; gap: 8px; }
 .actions button { padding: 6px 12px; }
-.primary { background: #2e8b63; border-color: #2e8b63; color: #fff; }
-.primary:hover:not(:disabled) { background: #38a574; }
+.primary { background: #2f5446; border-color: #2f5446; color: #e6f0eb; }
+.primary:hover:not(:disabled) { background: #3a6755; }
 .primary:disabled { opacity: 0.4; }
 .danger { margin-left: auto; color: #ff6b6b; }
+
+/* Imaginary timeline */
+.timeline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 84px;
+    box-sizing: border-box;
+    padding: 10px 20px 12px;
+    background: #1a1a1a;
+    border-top: 1px solid #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    z-index: 20;
+}
+.timeline-top { display: flex; justify-content: space-between; align-items: baseline; }
+.timeline-date { font-weight: 600; }
+.timeline-hint { font-size: 0.8rem; color: #8a8a8a; }
+.timeline-ends { display: flex; justify-content: space-between; font-size: 0.7rem; color: #707070; }
+.timeline input[type="range"] {
+    width: 100%;
+    margin: 0;
+    accent-color: #6f7fc4;
+    cursor: pointer;
+}
