@@ -17,17 +17,19 @@ button {
     cursor: pointer;
 }
 button:hover:not(:disabled) { background: #343434; }
-button:disabled { opacity: 0.4; cursor: default; }
+button:disabled { cursor: default; }
 
-.app { height: 100dvh; position: relative; }
+.app { height: 100dvh; position: relative; overflow: hidden; }
 
-/* Board with draggable circles */
+/* Board */
 .canvas {
     position: absolute;
     inset: 0;
     overflow: hidden;
     background: #121212;
 }
+
+/* Note circles */
 .bubble {
     position: absolute;
     box-sizing: border-box;
@@ -45,64 +47,79 @@ button:disabled { opacity: 0.4; cursor: default; }
     word-break: break-word;
     cursor: grab;
     user-select: none;
-    touch-action: none; /* lets you drag with a finger instead of scrolling */
+    touch-action: none;
+    transition: opacity 0.15s, background 0.15s, box-shadow 0.15s;
 }
-.bubble:active { cursor: grabbing; background: #4a5b92; }
+.bubble:active { cursor: grabbing; }
+.bubble.active {
+    background: #5b73c9;
+    box-shadow: 0 0 0 3px #a9b8ff;
+    z-index: 5;
+    cursor: default;
+}
+.bubble.draft { background: #5b73c9; }
+.bubble.dim { opacity: 0.3; pointer-events: none; }
 
-/* New note button */
-.fab {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    width: 64px;
-    height: 64px;
+/* "+" circle (top-left, same size as notes) */
+.add {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 110px;
+    height: 110px;
     padding: 0;
-    border-radius: 50%;
     border: none;
+    border-radius: 50%;
     background: #2e8b63;
-    color: #fff;
-    font-size: 2rem;
-    line-height: 1;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    z-index: 4;
+    transition: opacity 0.15s, background 0.15s;
 }
-.fab:hover:not(:disabled) { background: #38a574; }
+.add:hover:not(:disabled) { background: #38a574; }
+.add::before,
+.add::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: #fff;
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+}
+.add::before { width: 36px; height: 4px; }
+.add::after { width: 4px; height: 36px; }
+.add.dim { opacity: 0.3; pointer-events: none; }
 
-/* Editor on top of the board */
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    box-sizing: border-box;
-}
+/* Small editor card next to the note */
 .panel {
-    width: 100%;
-    max-width: 420px;
-    background: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 16px;
+    position: absolute;
+    z-index: 10;
     box-sizing: border-box;
+    background: #1e1e1e;
+    border: 1px solid #3a3a3a;
+    border-radius: 14px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 .panel textarea {
-    height: 140px;
-    padding: 10px;
+    flex: 1;
+    min-height: 0;
+    padding: 8px;
     font: inherit;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: inherit;
     background: #121212;
     border: 1px solid #3a3a3a;
     border-radius: 8px;
     resize: none;
 }
-.counter { align-self: flex-end; font-size: 0.8rem; color: #888; }
+.panel textarea:focus { outline: none; border-color: #a9b8ff; }
+.counter { align-self: flex-end; font-size: 0.75rem; color: #888; }
 .actions { display: flex; gap: 8px; }
+.actions button { padding: 6px 12px; }
 .primary { background: #2e8b63; border-color: #2e8b63; color: #fff; }
 .primary:hover:not(:disabled) { background: #38a574; }
+.primary:disabled { opacity: 0.4; }
 .danger { margin-left: auto; color: #ff6b6b; }
