@@ -3,15 +3,40 @@ body { margin: 0; font-family: system-ui, sans-serif; }
 .app { display: flex; height: 100dvh; }
 
 .sidebar {
-    width: 260px;
+    width: 300px;
     box-sizing: border-box;
     border-right: 1px solid #ddd;
     padding: 12px;
     overflow-y: auto;
 }
-.sidebar ul { list-style: none; padding: 0; margin: 12px 0 0; }
-.sidebar li { padding: 8px; cursor: pointer; border-radius: 6px; }
-.sidebar li.active, .sidebar li:hover { background: #eee; }
+
+/* Notes as circles */
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+}
+.sidebar li {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+    cursor: pointer;
+    font-size: 0.9rem;
+    word-break: break-word;
+    transition: transform 0.1s, background 0.1s;
+}
+.sidebar li:hover { background: #e2e2e2; transform: scale(1.05); }
+.sidebar li.active { background: #cfd8ff; }
 
 .editor {
     flex: 1;
@@ -31,7 +56,6 @@ body { margin: 0; font-family: system-ui, sans-serif; }
 @media (max-width: 700px) {
     .sidebar { width: 100%; border-right: none; }
     .editor { display: none; }
-    .sidebar li { padding: 14px 8px; }
 
     .app.has-selected .sidebar { display: none; }
     .app.has-selected .editor { display: flex; }
