@@ -16,11 +16,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Added configurations to eliminate the Git 128 exit warning
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           show-progress: false
+          submodules: false # Prevents the runner from looking for missing submodules
 
       - uses: actions/upload-pages-artifact@v5
         with:
